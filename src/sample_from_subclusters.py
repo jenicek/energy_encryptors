@@ -1,7 +1,9 @@
+from sklearn.decomposition import PCA
 import pandas as pd
 import numpy as np
 import os
-import random
+
+from sklearn.covariance import LedoitWolf
 
 
 # Function to get all file paths from a directory
@@ -48,7 +50,6 @@ def load_cluster_data(filepaths):
     return cluster_data
 
 
-# Function to generate synthetic data from a cluster
 def generate_synthetic_data(
         df,
         num_samples
@@ -73,23 +74,60 @@ def generate_synthetic_data(
         A DataFrame containing the generated synthetic instances with the
         same number of columns (timepoints) as the original dataset.
     """
-    means = df.mean(axis=0)
+    # means = df.mean(axis=0)
+    # stds = df.std(axis=0)
+    # synthetic_samples = np.random.normal(
+    #     loc=means,
+    #     scale=stds,
+    #     size=(num_samples, df.shape[1])
+    # )
+
     stds = df.std(axis=0)
-    log_means = np.log1p(means)  # Apply log transform to avoid negative values
-    log_stds = np.log1p(stds)
-    synthetic_samples = np.random.lognormal(
-        mean=log_means,
-        sigma=log_stds,
-        size=(num_samples, df.shape[1])
+
+    # Select random real instances from the dataset
+    base_instances = df.sample(n=num_samples, replace=True).to_numpy()
+
+    # Add Gaussian noise to the real instances
+    synthetic_samples = base_instances + np.random.normal(
+        loc=0, scale=stds, size=(num_samples, df.shape[1])
     )
 
     synthetic_samples = np.clip(
         synthetic_samples,
-        a_min=0,
+        a_min=0.08,  # min of the observed data
         a_max=None
     )  # Ensure no negative values
 
+    # # Select one random real instance
+    # base_instance = df.sample(n=1, replace=True).to_numpy().flatten()
+    #
+    # # Generate Gaussian noise
+    # noise = np.random.normal(loc=0, scale=stds, size=base_instance.shape)
+    #
+    # noise_strength = 1.0
+    # # Apply noise with scaling factor
+    # synthetic_sample = base_instance + noise_strength * noise
+    #
+    # # Clip values to avoid unrealistic negative values
+    # synthetic_sample = np.clip(synthetic_sample, a_min=0.08, a_max=None)
+    #
+    # import matplotlib.pyplot as plt
+    # # Plot the original vs. synthetic sample
+    # plt.figure(figsize=(12, 5))
+    # plt.plot(base_instance, label="Original Instance", linestyle='--',
+    #          alpha=0.8)
+    # plt.plot(synthetic_sample, label=f"Noise Strength: {noise_strength}",
+    #          alpha=0.8)
+    # plt.xlabel("Timepoints")
+    # plt.ylabel("Value")
+    # plt.title(
+    #     f"Signal-to-Noise Ratio Visualization (Noise Strength = {noise_strength})")
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
+
     return pd.DataFrame(synthetic_samples, columns=df.columns)
+
 
 
 # Function to create synthetic dataset from multiple clusters
@@ -143,7 +181,11 @@ def create_synthetic_dataset(
 
 
 # Function to save synthetic data
-def save_synthetic_data(df, output_path, first_column_path):
+def save_synthetic_data(
+        df,
+        output_path,
+        first_column_path
+):
     """
     Save the generated synthetic dataset to a specified file path in .pkl and .csv format.
     The dataset is transposed, and the first column from the original dataset is added before saving.

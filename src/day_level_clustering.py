@@ -96,7 +96,7 @@ week_clusters_to_process = {
 }  # Specify which week clusters to process per month
 
 daily_k_values = {
-    (0, 0): 2,
+    (0, 0): 1,
     (0, 2): 2,
     (0, 3): 3,
     (0, 4): 3,
@@ -106,10 +106,10 @@ daily_k_values = {
     (2, 2): 3,
     (3, 0): 3,
     (3, 1): 3,
-    (3, 2): 3,
-    (5, 0): 3,
+    (3, 2): 2,
+    (5, 0): 4,
     (5, 1): 3,
-    (5, 4): 3,
+    (5, 4): 4,
 }  # Specify k-values for KMeans per week cluster
 
 # Process each selected weekly cluster
