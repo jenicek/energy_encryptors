@@ -5,7 +5,7 @@ import os
 
 # Define file paths
 data_path = "../data/smart_meters_london_2013_transposed.csv"
-output_dir = "../results/plots"
+output_dir = "../results/plots/week_level_plots"
 os.makedirs(output_dir, exist_ok=True)
 
 # Load dataset
@@ -26,33 +26,31 @@ sampled_rows = data.sample(n=20, random_state=42)
 
 # Convert column names (timestamps) to a DataFrame index for grouping
 timestamps = pd.to_datetime(data.columns)
-months = timestamps.month
-month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-               "Oct", "Nov", "Dec"]
+weeks = timestamps.isocalendar().week
+week_labels = [f"Week {w}" for w in range(1, 53)]  # Generate week labels
 
-# Compute monthly means for each sampled row and plot
+# Compute weekly means for each sampled row and plot
 for i, row in enumerate(sampled_rows.iterrows()):
     index, row_values = row
-    monthly_means = pd.DataFrame(
-        {'Month': months, 'Mean Consumption': row_values.values})
-    monthly_means = monthly_means.groupby('Month').mean()
-    monthly_means.index = [month_order[m - 1] for m in
-                           monthly_means.index]  # Ensure correct month order
-    monthly_means = monthly_means.reindex(
-        month_order)  # Maintain chronological order
+    weekly_means = pd.DataFrame(
+        {'Week': weeks, 'Mean Consumption': row_values.values})
+    weekly_means = weekly_means.groupby('Week').mean()
+    weekly_means.index = [f"Week {w}" for w in weekly_means.index]
+    weekly_means = weekly_means.reindex(
+        week_labels)  # Ensure correct chronological order
 
     # Plot
-    plt.figure(figsize=(8, 5))
-    plt.plot(monthly_means.index, monthly_means['Mean Consumption'], marker='o',
+    plt.figure(figsize=(10, 5))
+    plt.plot(weekly_means.index, weekly_means['Mean Consumption'], marker='o',
              linestyle='-')
-    plt.title(f"Monthly Mean Consumption for household {index}")
-    plt.xlabel("Month")
+    plt.title(f"Weekly Mean Consumption for household {index}")
+    plt.xlabel("Week")
     plt.ylabel("Mean kWh")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, fontsize=8)
     plt.grid()
 
     # Save plot
-    plot_path = os.path.join(output_dir, f"row_{index}_monthly_mean.png")
+    plot_path = os.path.join(output_dir, f"row_{index}_weekly_mean.png")
     plt.savefig(plot_path)
     plt.close()
 
