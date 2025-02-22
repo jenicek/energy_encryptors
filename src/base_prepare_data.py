@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Define file paths
-data_path = "../data/smart_meters_london_2013_transposed.csv"
+data_path = "../data/smart_meters_london_2013_transposed_100.csv"
 output_pickle_path = "../data/smart_meters_cleaned.pkl"
 output_numpy_path = "../data/smart_meters_cleaned.npy"
 
