@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Define file paths
-data_path = "../data/smart_meters_london_2013_transposed.csv"
+data_path = "../data/smart_meters_london_2013.csv"
 output_path = "../data/smart_meters_london_2013_transposed_cleaned.csv"
 
 # Load dataset

@@ -49,7 +49,10 @@ def load_cluster_data(filepaths):
 
 
 # Function to generate synthetic data from a cluster
-def generate_synthetic_data(df, num_samples):
+def generate_synthetic_data(
+        df,
+        num_samples
+):
     """
     Generate synthetic instances from a given cluster dataset.
 

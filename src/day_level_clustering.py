@@ -96,8 +96,8 @@ week_clusters_to_process = {
 }  # Specify which week clusters to process per month
 
 daily_k_values = {
-    (0, 0): 3,
-    (0, 2): 3,
+    (0, 0): 2,
+    (0, 2): 2,
     (0, 3): 3,
     (0, 4): 3,
     (0, 7): 3,
