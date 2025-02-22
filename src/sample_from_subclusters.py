@@ -75,10 +75,20 @@ def generate_synthetic_data(
     """
     means = df.mean(axis=0)
     stds = df.std(axis=0)
-    synthetic_samples = np.random.normal(loc=means, scale=stds,
-                                         size=(num_samples, df.shape[1]))
-    synthetic_samples = np.clip(synthetic_samples, a_min=0,
-                                a_max=None)  # Ensure no negative values
+    log_means = np.log1p(means)  # Apply log transform to avoid negative values
+    log_stds = np.log1p(stds)
+    synthetic_samples = np.random.lognormal(
+        mean=log_means,
+        sigma=log_stds,
+        size=(num_samples, df.shape[1])
+    )
+
+    synthetic_samples = np.clip(
+        synthetic_samples,
+        a_min=0,
+        a_max=None
+    )  # Ensure no negative values
+
     return pd.DataFrame(synthetic_samples, columns=df.columns)
 
 
@@ -133,9 +143,10 @@ def create_synthetic_dataset(
 
 
 # Function to save synthetic data
-def save_synthetic_data(df, output_path):
+def save_synthetic_data(df, output_path, first_column_path):
     """
-    Save the generated synthetic dataset to a specified file path in .pkl format.
+    Save the generated synthetic dataset to a specified file path in .pkl and .csv format.
+    The dataset is transposed, and the first column from the original dataset is added before saving.
 
     Parameters
     ----------
@@ -143,9 +154,26 @@ def save_synthetic_data(df, output_path):
         The synthetic dataset to be saved.
     output_path : str
         The file path where the dataset should be saved.
+    first_column_path : str
+        The file path where the first column of the original dataset is stored.
     """
-    df.to_pickle(output_path)
-    print(f"Synthetic dataset saved to {output_path}")
+    # Load the first column from original dataset
+    first_column = pd.read_pickle(first_column_path)
+
+    # Transpose the synthetic dataset
+    df = df.T
+
+    # Add the first column
+    df.insert(0, first_column.name, first_column)
+
+    # Save as pickle
+    # df.to_pickle(output_path)
+
+    # Save as CSV
+    csv_output_path = output_path.replace(".pkl", ".csv")
+    df.to_csv(csv_output_path, index=False)
+
+    print(f"Synthetic dataset saved to {output_path} and {csv_output_path}")
 
 
 # Example usage
@@ -163,7 +191,6 @@ selected_monthly_files = [
     "../data/monthly_clusters/cluster_4.pkl",
 ]
 
-output_path = "../data/synthetic_smart_meters.pkl"
 
 synthetic_data = create_synthetic_dataset(
     daily_dir,
@@ -173,4 +200,6 @@ synthetic_data = create_synthetic_dataset(
 
 print(f"Shape of synthetic data: {synthetic_data.shape}")
 
-save_synthetic_data(synthetic_data, output_path)
+first_column_path = "../data/first_column_smart_meters.pkl"
+output_path = "../data/smart_meters_london_2013_synthetic.pkl"
+save_synthetic_data(synthetic_data, output_path, first_column_path)

@@ -211,11 +211,12 @@ def create_plots(df_real, df_synth, outputPath = Path.cwd() / 'plots'):
 # ------------------------------------------------------------------------------
 
 pathReal = "../data/smart_meters_london_2013.csv"
-# pathSynth = "../data/smart_meters_london_2013_synthetic.csv"
-pathSynth = "../data/smart_meters_london_2013.csv"
+pathSynth = "../data/smart_meters_london_2013_synthetic.csv"
 
 df_real = pd.read_csv(pathReal, parse_dates = ['timestamp']).set_index('timestamp')
 df_synth = pd.read_csv(pathSynth, parse_dates = ['timestamp']).set_index('timestamp')
+# df_synth = pd.read_pickle(pathSynth)
+# df_synth.set_index('timestamp', inplace=True)
 
 fig_dict, rmse_dict = create_plots(df_real, df_synth)
 
