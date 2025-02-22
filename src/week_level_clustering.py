@@ -15,7 +15,6 @@ if os.path.exists(plot_output_dir):
 os.makedirs(plot_output_dir, exist_ok=True)
 os.makedirs(week_cluster_data_dir, exist_ok=True)
 
-
 # Function to load a specific month cluster dataset
 def load_month_cluster(cluster_id):
     cluster_file_path = os.path.join(cluster_data_dir,
@@ -26,13 +25,11 @@ def load_month_cluster(cluster_id):
         print(f"Cluster file {cluster_file_path} not found.")
         return None
 
-
 # Function to aggregate data at the weekly level
 def aggregate_weekly(data, timestamps):
     time_mappings = pd.Series(timestamps).dt.to_period("W").astype(str)
     aggregated_data = data.groupby(time_mappings, axis=1).mean()
     return aggregated_data
-
 
 # Function to perform clustering on weekly aggregated data
 def cluster_weekly_data(data, num_clusters):
@@ -43,30 +40,28 @@ def cluster_weekly_data(data, num_clusters):
                     random_state=42, n_init=10)
     return kmeans.fit_predict(data)
 
-
-# Function to compute mean and std for weekly clusters
-def compute_weekly_cluster_stats(data, clusters, cluster_id):
-    data["weekly_cluster"] = clusters
+# Function to compute mean and std for weekly clusters using full data
+def compute_weekly_cluster_stats(full_month_data, aggregated_data, clusters, cluster_id):
+    full_month_data["weekly_cluster"] = clusters
     cluster_stats = {}
 
     for weekly_cluster_id in range(np.max(clusters) + 1):
-        weekly_cluster_data = data[
-            data["weekly_cluster"] == weekly_cluster_id].drop(
+        weekly_cluster_data = full_month_data[
+            full_month_data["weekly_cluster"] == weekly_cluster_id].drop(
             columns=["weekly_cluster"])
-        cluster_means = weekly_cluster_data.mean(axis=0)
-        cluster_stds = weekly_cluster_data.std(axis=0)
+        cluster_means = aggregated_data[clusters == weekly_cluster_id].mean(axis=0)
+        cluster_stds = aggregated_data[clusters == weekly_cluster_id].std(axis=0)
         cluster_stats[weekly_cluster_id] = (
         cluster_means, cluster_stds, len(weekly_cluster_data))
 
-        # Save weekly sub-cluster data
+        # Save full weekly sub-cluster data
         weekly_cluster_file = os.path.join(week_cluster_data_dir,
                                            f"month_{cluster_id}_weekly_{weekly_cluster_id}.pkl")
         weekly_cluster_data.to_pickle(weekly_cluster_file)
         print(
-            f"Saved weekly cluster {weekly_cluster_id} for month cluster {cluster_id} to {weekly_cluster_file}")
+            f"Saved full data for weekly cluster {weekly_cluster_id} in month {cluster_id} to {weekly_cluster_file}")
 
     return cluster_stats
-
 
 # Function to plot weekly cluster statistics
 def plot_weekly_cluster_stats(cluster_stats, cluster_id):
@@ -87,28 +82,31 @@ def plot_weekly_cluster_stats(cluster_stats, cluster_id):
         plt.close()
     print(f"Weekly cluster plots saved in {plot_output_dir}")
 
-
 # Define which monthly clusters to process
 month_clusters_to_process = [
     0,
+    1,
     2,
-    4
+    3,
+    5
 ]  # Specify the month cluster indices
 
 weekly_k_values = {
-    0: 4,
-    2: 5,
-    4: 3
+    0: 8,
+    1: 2,
+    2: 3,
+    3: 3,
+    5: 5,
 }  # Specify k-values for KMeans per month cluster
 
 # Process each selected monthly cluster
 timestamps = pd.date_range(start="2013-01-01", periods=8760, freq="H")
 
 for month_cluster_id in month_clusters_to_process:
-    month_data = load_month_cluster(month_cluster_id)
-    if month_data is not None:
+    full_month_data = load_month_cluster(month_cluster_id)
+    if full_month_data is not None:
         weekly_data = aggregate_weekly(
-            month_data,
+            full_month_data,
             timestamps
         )
 
@@ -118,6 +116,7 @@ for month_cluster_id in month_clusters_to_process:
         )
 
         weekly_cluster_stats = compute_weekly_cluster_stats(
+            full_month_data,
             weekly_data,
             weekly_clusters,
             month_cluster_id

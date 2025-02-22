@@ -7,7 +7,7 @@ from tqdm import tqdm
 import shutil
 
 # Define file paths
-data_path = "../data/smart_meters_london_2013_transposed_100.csv"
+data_path = "../data/smart_meters_london_2013_transposed.csv"
 output_synthetic_path = "../data/synthetic_smart_meters.pkl"
 plot_output_dir = "../results/plots/monthly_clusters"
 if os.path.exists(plot_output_dir):
@@ -54,7 +54,11 @@ def cluster_data(
 
 
 # Compute mean and std per month for each cluster
-def compute_cluster_stats(original_data, aggregated_data, clusters):
+def compute_cluster_stats(
+        original_data,
+        aggregated_data,
+        clusters
+):
     aggregated_data["cluster"] = clusters
     original_data["cluster"] = clusters
 
@@ -102,9 +106,23 @@ def plot_cluster_stats(cluster_stats):
 # Load data and run clustering
 data, timestamps = load_data(data_path)
 time_level = "M"  # Aggregation level: 'M' for month, 'W' for week, 'D' for day
-aggregated_data = aggregate_time_level(data, timestamps, time_level)
-clusters = cluster_data(aggregated_data, num_clusters=6)
+
+aggregated_data = aggregate_time_level(
+    data,
+    timestamps,
+    time_level
+)
+
+clusters = cluster_data(
+    aggregated_data,
+    num_clusters=6
+)
 
 # Compute and plot cluster statistics
-cluster_stats = compute_cluster_stats(data, aggregated_data, clusters)
+cluster_stats = compute_cluster_stats(
+    data,
+    aggregated_data,
+    clusters
+)
+
 plot_cluster_stats(cluster_stats)
