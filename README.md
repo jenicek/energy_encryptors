@@ -1,6 +1,10 @@
-# Codebase of Energy Encryptors team for the Watts up Hackathon
+# Energy Encryptors at the Watt's Up Hackathon
 
-## Reproduction of our solution
+The Watt's Up Hackathon took place on February 22-23, 2025, in Vienna, where our team secured a third place.
+
+![Team picture](energy_encryptors.jpg "Teamp picture")
+
+## Reproduction of the submitted solution
 
 1. Install dependencies in a virtual environment
 
@@ -20,7 +24,7 @@ python3 eval.py
 
 ⚠️ The scripts are not parametrized and rely on hard-coded paths
 
-### Results of our solutions
+### Results of the submitted solutions
 
 ```
 1.147897992895235
