@@ -19,17 +19,18 @@ def generate_sequence(i):
     np.random.seed(i)
     sequence = np.zeros((365, 24))
     chosen = np.random.choice(days.shape[0])
+    first_chosen = chosen
     sequence[0] = days[chosen,0]
     for i in range(1, 365):
-        dist = distance.cdist(days[chosen,i].reshape(1, -1), days[:,i])
+        dist = distance.cdist(days[first_chosen,i].reshape(1, -1), days[:,i])
         sample = np.argpartition(dist.squeeze(), 4)[:5]
         chosen = sample[np.random.randint(1,5)]
-        sequence[i] = [max(np.random.normal(x, np.std(y)), 0.08) for x, y in zip(days[chosen,i], days[sample[:2],i].T)]
-        # sequence[i+1] = [np.random.lognormal(x, np.std(np.log(y))) for x, y in zip(days[chosen,i+1], days[sample,i+1].T)]
-        # sequence[i+1] = days[chosen,i+1]
+        # sequence[i] = [round(max(np.random.normal(x, np.std(y)), 0.08 + np.random.normal(0, 0.01)), 3) for x, y in zip(days[chosen,i], days[sample[:2],i].T)]
+        # sequence[i] = [np.random.lognormal(x, np.std(np.log(y))) for x, y in zip(days[chosen,i], days[sample,i].T)]
+        sequence[i] = days[chosen,i]
     return sequence.reshape(-1)
 
-generate_sequence(0)
+# generate_sequence(0)
 with Pool(18) as p:
     output = p.map(generate_sequence, range(4125))
     output = np.vstack(output)
